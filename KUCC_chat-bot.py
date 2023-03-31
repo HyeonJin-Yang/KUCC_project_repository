@@ -1,30 +1,26 @@
-import os, sys
-import json, jsonlines
+import os
+
+import jsonlines
 import openai
 
-# --------------------------------------------- <PATH Configuration> ---------------------------------------------
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-# SAVE_DIR = os.path.join(ROOT_DIR, 'saved_results')
-# if not os.path.exists(SAVE_DIR):
-#     os.mkdir(SAVE_DIR)
-
-INPUT_DIR = os.path.join(ROOT_DIR, 'data')
-# --------------------------------------------- <API Configuration> ----------------------------------------------
+from utils import *
+# --------------------------------------------- <OpenAI API Key Setting> -----------------------------------------
 with open(os.path.join(ROOT_DIR, "openai_key.txt"), 'r') as f:
     key = f.readline().strip()
     openai.api_key = key
 
-# --------------------------------------------- <Model Configuration> --------------------------------------------
+# --------------------------------------------- <Few-Shot Learning?> ----------------------------------------------
+with jsonlines.open(os.path.join(DATA_DIR, "train_data/train.jsonl"), 'r') as f:
+        messages = []
+        for prompt in f:
+             messages.append(prompt)
+             if len(messages) == 40: break
+# ------------------------------------------------- <Chat-bot> ---------------------------------------------------
 model_name = "gpt-3.5-turbo-0301"
 
-# --------------------------------------------- <Few-Shot Learning> ----------------------------------------------
-with jsonlines.open(os.path.join(INPUT_DIR, 'meta_train.jsonl'), 'r') as f:
-    messages = list(f)
-
-# ------------------------------------------------- <Chat-bot> ---------------------------------------------------
 while True:
     user_content = input("user : ")
-    messages.append({"role": "user", "content": f"{user_content}"})
+    messages.append({"role": "assistant", "content": f"{user_content}"})
 
     completion = openai.ChatCompletion.create(
         model=model_name,
